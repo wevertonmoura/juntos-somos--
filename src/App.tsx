@@ -426,7 +426,7 @@ const JuntosSomosMaisFinal = () => {
              <div className="flex flex-col sm:flex-row gap-2">
                <motion.a whileHover={hoverEffect} whileTap={tapEffect} href={INSTAGRAM_LINK} target="_blank" className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black py-3 px-4 rounded-lg shadow-lg shadow-purple-900/30 flex items-center justify-center gap-2 text-sm"><Instagram size={16} /> SIGA NO INSTA</motion.a>
                <motion.a whileHover={hoverEffect} whileTap={tapEffect} href={FOOTER_WHATSAPP_LINK} target="_blank" className="flex-1 bg-green-600 hover:bg-green-500 text-white font-black py-3 px-4 rounded-lg shadow-lg shadow-green-900/20 flex items-center justify-center gap-2 text-sm">
-                 FALE CONOSCO
+                 ENTRA NO GRUPO
                </motion.a>
              </div>
           </div>
