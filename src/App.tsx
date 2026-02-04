@@ -256,7 +256,7 @@ const JuntosSomosMaisFinal = () => {
     setFormData({ name: '', email: '', team: '', level: '', health: '', health_details: '', termsAccepted: false });
   };
 
-  const shareText = encodeURIComponent(`Fala! Me inscrevi no Juntos Somos +. Bora? Inscreva-se também: https://uniao-em-equipes-camaragibe.netlify.app/`);
+  const shareText = encodeURIComponent(`Fala! Me inscrevi no Juntos Somos +. Bora? Inscreva-se também: https://uniao-das-equipes-camaragibe.netlify.app/`);
   const shareLink = `https://wa.me/?text=${shareText}`;
 
   return (
