@@ -68,6 +68,7 @@ const AdminPanel = () => {
   };
 
   // === LÓGICA DO RANKING ===
+ // === NOVA LÓGICA DO RANKING (Admin) ===
   const calcularRankingManipulado = (data: any[]) => {
     const counts: Record<string, number> = {};
     
@@ -76,53 +77,31 @@ const AdminPanel = () => {
       counts[nomeOficial] = (counts[nomeOficial] || 0) + 1;
     });
 
-    let outrasEquipes: any[] = [];
+    let listaGeral: any[] = [];
     let invasoresCountReal = 0;
 
     Object.entries(counts).forEach(([name, count]) => {
       if (name === "INVASORES") {
         invasoresCountReal = count;
       } else {
-        outrasEquipes.push({ name, count });
+        listaGeral.push({ name, count });
       }
     });
 
-    outrasEquipes.sort((a, b) => b.count - a.count);
+    // TRAVA EM 33 (Mostra 33 mesmo se tiver menos)
+    const invasoresCountFake = Math.max(invasoresCountReal, 33);
 
-    let rankingFinal = [];
+    // Coloca Invasores na lista geral
+    listaGeral.push({ name: "INVASORES", count: invasoresCountFake });
 
-    if (outrasEquipes.length >= 3) {
-      rankingFinal.push({ ...outrasEquipes[0], posicao: 1 });
-      rankingFinal.push({ ...outrasEquipes[1], posicao: 2 });
+    // Ordena de verdade (quem tiver mais pontos sobe)
+    listaGeral.sort((a, b) => b.count - a.count);
 
-      const scoreSegundo = outrasEquipes[1].count;
-      const scoreTerceiroReal = outrasEquipes[2].count;
-      
-      let scoreInvasores = scoreTerceiroReal + 2;
-
-      if (scoreInvasores > scoreSegundo) {
-        scoreInvasores = scoreSegundo;
-      }
-      
-      rankingFinal.push({ name: "INVASORES", count: scoreInvasores, posicao: 3 });
-
-      outrasEquipes.slice(2).forEach((team, index) => {
-        rankingFinal.push({ ...team, posicao: 4 + index });
-      });
-
-    } else if (outrasEquipes.length === 2) {
-      rankingFinal.push({ ...outrasEquipes[0], posicao: 1 });
-      rankingFinal.push({ ...outrasEquipes[1], posicao: 2 });
-      
-      const scoreInvasores = Math.max(1, outrasEquipes[1].count - 1);
-      rankingFinal.push({ name: "INVASORES", count: scoreInvasores, posicao: 3 });
-
-    } else {
-      const invasoresObj = { name: "INVASORES", count: invasoresCountReal };
-      rankingFinal = [...outrasEquipes, invasoresObj]
-        .sort((a,b) => b.count - a.count)
-        .map((item, idx) => ({ ...item, posicao: idx + 1 }));
-    }
+    // Adiciona posições
+    const rankingFinal = listaGeral.map((item, index) => ({
+       ...item,
+       posicao: index + 1 
+    }));
 
     setRankingCompleto(rankingFinal); 
   };
