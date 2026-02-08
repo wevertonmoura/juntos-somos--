@@ -309,7 +309,7 @@ const JuntosSomosMaisFinal = () => {
                   </div>
                   <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wide px-4">
                       <span className="flex items-center gap-1"><Activity size={12} className="text-orange-500"/> {confirmedData.level}</span>
-                      <span className="flex items-center gap-1"><Calendar size={12} className="text-blue-900"/> 26 FEVEREIRO • 08h00</span>
+                      <span className="flex items-center gap-1"><Calendar size={12} className="text-blue-900"/> 26 FEVEREIRO • 19h00</span>
                   </div>
                   {isFreshRegistration && (
                     <div className="absolute bottom-0 left-0 w-full bg-yellow-400 text-blue-900 text-[10px] font-bold p-2 text-center flex items-center justify-center gap-2 animate-pulse"><Loader2 className="animate-spin w-3 h-3" /> Redirecionando para WhatsApp...</div>
@@ -351,7 +351,7 @@ const JuntosSomosMaisFinal = () => {
               <h3 className="text-xl font-black text-blue-900 uppercase mb-6 flex items-center gap-2"><Clock size={24} className="text-yellow-400"/> Cronograma</h3>
               <div className="space-y-6">
                 <ScheduleItem icon={<Users size={20} className="text-blue-900"/>} time="19h00" label="Concentração" desc="Encontro das equipes na Praça de Camaragibe."/>
-                <ScheduleItem icon={<Flag size={20} className="text-blue-900"/>} time="08h00" label="Saída" desc="Largada pontual do treino."/>
+                <ScheduleItem icon={<Flag size={20} className="text-blue-900"/>} time="19h30" label="Saída" desc="Largada pontual do treino."/>
                 <ScheduleItem icon={<Activity size={20} className="text-blue-900"/>} time="5km" label="Percurso Leve" desc="Ideal para todos os ritmos."/>
               </div>
           </div>
