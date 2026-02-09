@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs, getFirestore, deleteDoc, doc, updateDoc } from "firebase/firestore"; // Troquei onSnapshot por getDocs
+import { collection, query, getDocs, getFirestore, deleteDoc, doc, updateDoc } from "firebase/firestore"; 
 import { initializeApp } from "firebase/app";
 import { Trophy, Activity, ArrowLeft, Search, Users, X, RotateCcw, Trash2, MonitorPlay, Medal, Crown, ExternalLink, Edit, Save, XCircle, Lock, BarChart3, Copy, Check, Download, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -49,25 +49,33 @@ const AdminPanel = () => {
   };
 
   // === BUSCAR DADOS (ECONOMIA DE COTA) ===
-  // Substituímos o onSnapshot por getDocs. Só busca quando manda.
   const buscarDados = async () => {
     if (!isAuthenticated) return;
     
     setLoading(true);
     try {
-        console.log("Baixando lista atualizada...");
+        console.log("🔥 Baixando lista atualizada...");
+        // Tenta buscar na coleção "inscrição" (Se der erro, tente "inscricoes")
         const inscricoesRef = collection(db, "inscrição");
         const q = query(inscricoesRef);
-        const snapshot = await getDocs(q); // Lê apenas UMA VEZ
+        
+        // ⚠️ AQUI ESTÁ A ECONOMIA: Lê apenas UMA VEZ
+        const snapshot = await getDocs(q); 
         
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-        const ordenados = data.sort((a, b) => Number(b.numero_inscricao) - Number(a.numero_inscricao));
+        
+        // Ordena por número de inscrição (decrescente) ou por ordem de chegada
+        const ordenados = data.sort((a, b) => {
+            const numA = Number(a.numero_inscricao) || 0;
+            const numB = Number(b.numero_inscricao) || 0;
+            return numB - numA;
+        });
         
         setInscritos(ordenados);
         calcularRankingManipulado(data);
     } catch (error) {
         console.error("Erro ao buscar:", error);
-        alert("Erro ao buscar dados. Tente atualizar.");
+        alert("Erro ao buscar dados. Verifique sua conexão.");
     } finally {
         setLoading(false);
     }
@@ -81,21 +89,32 @@ const AdminPanel = () => {
   // === PADRONIZADOR DE NOMES ===
   const padronizarNome = (nomeBruto: string) => {
     if (!nomeBruto) return "SEM EQUIPE";
-    const limpo = nomeBruto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/g, " ");
+    const limpo = nomeBruto.toUpperCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Z0-9 ]/g, " ")
+        .trim();
     
     if (limpo.includes("FORCA") && limpo.includes("HONRA")) return "FORÇA E HONRA";
     if (limpo.includes("INVASOR")) return "INVASORES";
     if (limpo.includes("CORRE") && (limpo.includes("CAMARA") || limpo.includes("GIBE"))) return "CORRE CAMARAGIBE";
     if (limpo.includes("PANGUA")) return "PANGUAS";
     if (limpo.includes("QUEM") && limpo.includes("AMA")) return "QUEM AMA CORRE";
+    if (limpo === "" || limpo === "NAO TENHO") return "SEM EQUIPE";
     
-    return limpo.trim();
+    return limpo;
   };
 
   // === LÓGICA DO RANKING ===
   const calcularRankingManipulado = (data: any[]) => {
     const counts: Record<string, number> = {};
-    data.forEach(p => { const nomeOficial = padronizarNome(p.team); counts[nomeOficial] = (counts[nomeOficial] || 0) + 1; });
+    
+    data.forEach(p => { 
+        const timeBruto = p.team || p.equipe || p["Qual sua equipe?"] || "";
+        const nomeOficial = padronizarNome(timeBruto); 
+        if (nomeOficial !== "SEM EQUIPE") {
+            counts[nomeOficial] = (counts[nomeOficial] || 0) + 1; 
+        }
+    });
 
     let listaGeral: any[] = [];
     let invasoresCountReal = 0;
@@ -117,16 +136,21 @@ const AdminPanel = () => {
 
   const handleExportExcel = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Numero,Nome,Equipe,Nivel,Saude,Email\n"; 
+    csvContent += "Numero,Nome,Equipe,Nivel,Telefone,Email,Saude\n"; 
+    
     inscritos.forEach((p) => {
-        const saude = p.health_details && p.health_details !== "N/A" ? p.health_details : "OK";
-        const linha = `${p.numero_inscricao},"${p.name}","${p.team}",${p.level},"${saude}",${p.email}`;
+        const saude = p.health_details && p.health_details !== "N/A" ? p.health_details.replace(/,/g, " ") : "OK";
+        const nome = p.name ? p.name.replace(/,/g, " ") : "";
+        const equipe = p.team ? p.team.replace(/,/g, " ") : "";
+        
+        const linha = `${p.numero_inscricao},"${nome}","${equipe}",${p.level},"${p.phone || ""}",${p.email},"${saude}"`;
         csvContent += linha + "\n";
     });
+    
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "lista_invasores_simples.csv");
+    link.setAttribute("download", "lista_invasores_completa.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -151,35 +175,44 @@ const AdminPanel = () => {
             // 1. Apaga no Firebase
             await deleteDoc(doc(db, "inscrição", id)); 
             
-            // 2. Apaga da tela MANUALMENTE (Economiza 450 leituras)
+            // 2. Apaga da tela MANUALMENTE (Economiza leituras)
             const novaLista = inscritos.filter(p => p.id !== id);
             setInscritos(novaLista);
-            calcularRankingManipulado(novaLista); // Recalcula ranking sem gastar cota
+            calcularRankingManipulado(novaLista); 
             
             alert("Excluído com sucesso!"); 
         } 
-        catch (error) { alert("Erro ao excluir."); }
+        catch (error) { alert("Erro ao excluir. Tente novamente."); }
     }
   };
 
   // === EDIÇÃO ECONÔMICA (NÃO RELÊ TUDO) ===
-  const iniciarEdicao = (id: string, timeAtual: string) => { setEditandoId(id); setNovoTime(timeAtual); };
-  const cancelarEdicao = () => { setEditandoId(null); setNovoTime(""); };
+  const iniciarEdicao = (id: string, timeAtual: string) => { 
+      setEditandoId(id); 
+      setNovoTime(timeAtual); 
+  };
+  
+  const cancelarEdicao = () => { 
+      setEditandoId(null); 
+      setNovoTime(""); 
+  };
   
   const salvarEdicao = async (id: string) => {
+    if (!novoTime.trim()) return;
+    
     try {
         const timeFormatado = novoTime.toUpperCase();
         // 1. Atualiza no Firebase
         const docRef = doc(db, "inscrição", id);
         await updateDoc(docRef, { team: timeFormatado });
         
-        // 2. Atualiza na tela MANUALMENTE (Economia!)
+        // 2. Atualiza na tela MANUALMENTE
         const novaLista = inscritos.map(p => p.id === id ? { ...p, team: timeFormatado } : p);
         setInscritos(novaLista);
         calcularRankingManipulado(novaLista);
 
         setEditandoId(null);
-    } catch (error) { alert("Erro ao atualizar."); }
+    } catch (error) { alert("Erro ao atualizar equipe."); }
   };
 
   const stats = {
@@ -195,7 +228,9 @@ const AdminPanel = () => {
     const equipe = padronizarNome(item.team);
     const nome = (item.name || "").toUpperCase();
     const nivel = padronizarNome(item.level || "");
-    return equipe.includes(termo) || nome.includes(termo.replace(" ", "")) || nivel.includes(termo);
+    const email = (item.email || "").toUpperCase();
+    
+    return equipe.includes(termo) || nome.includes(termo.replace(" ", "")) || nivel.includes(termo) || email.includes(termo);
   });
 
   const filtrarPorNivel = (nivel: string) => {
@@ -222,7 +257,12 @@ const AdminPanel = () => {
     );
   }
 
-  if (loading && inscritos.length === 0) return <div className="min-h-screen bg-blue-950 flex items-center justify-center text-white"><RotateCcw className="animate-spin mr-2"/> Carregando...</div>;
+  if (loading && inscritos.length === 0) return (
+      <div className="min-h-screen bg-blue-950 flex flex-col items-center justify-center text-white space-y-4">
+          <RotateCcw className="animate-spin text-yellow-400" size={40}/> 
+          <p className="font-bold tracking-widest animate-pulse">CARREGANDO LISTA...</p>
+      </div>
+  );
 
   if (modoTV) {
     return (

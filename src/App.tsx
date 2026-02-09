@@ -51,7 +51,7 @@ const itemStagger: Variants = {
 };
 
 // === 🚨 CONTROLE DE MANUTENÇÃO 🚨 ===
-const MODO_MANUTENCAO = true; // true = Bloqueia SÓ O FORMULÁRIO false
+const MODO_MANUTENCAO = false; // true = Bloqueia SÓ O FORMULÁRIO false
 
 const JuntosSomosMaisFinal = () => {
   const path = window.location.pathname;
