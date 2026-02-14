@@ -31,6 +31,9 @@ const AdminPanel = () => {
   const [rankingCompleto, setRankingCompleto] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [copiado, setCopiado] = useState(false);
+  
+  // === MODO DETETIVE ===
+  const [modoDetetive, setModoDetetive] = useState(false);
 
   // Estados para Edição
   const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -55,16 +58,12 @@ const AdminPanel = () => {
     setLoading(true);
     try {
         console.log("🔥 Baixando lista atualizada...");
-        // Tenta buscar na coleção "inscrição" (Se der erro, tente "inscricoes")
         const inscricoesRef = collection(db, "inscrição");
         const q = query(inscricoesRef);
-        
-        // ⚠️ AQUI ESTÁ A ECONOMIA: Lê apenas UMA VEZ
         const snapshot = await getDocs(q); 
         
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
         
-        // Ordena por número de inscrição (decrescente) ou por ordem de chegada
         const ordenados = data.sort((a, b) => {
             const numA = Number(a.numero_inscricao) || 0;
             const numB = Number(b.numero_inscricao) || 0;
@@ -81,7 +80,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Busca dados ao entrar ou clicar em Atualizar
   useEffect(() => {
     buscarDados();
   }, [refreshKey, isAuthenticated]);
@@ -92,6 +90,7 @@ const AdminPanel = () => {
     const limpo = nomeBruto.toUpperCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/[^A-Z0-9 ]/g, " ")
+        .replace(/\s+/g, ' ') // Tira espaços duplos
         .trim();
     
     if (limpo.includes("FORCA") && limpo.includes("HONRA")) return "FORÇA E HONRA";
@@ -99,6 +98,7 @@ const AdminPanel = () => {
     if (limpo.includes("CORRE") && (limpo.includes("CAMARA") || limpo.includes("GIBE"))) return "CORRE CAMARAGIBE";
     if (limpo.includes("PANGUA")) return "PANGUAS";
     if (limpo.includes("QUEM") && limpo.includes("AMA")) return "QUEM AMA CORRE";
+    if (limpo.includes("AGUIAS") && limpo.includes("MOVIMENTO")) return "AGUIAS EM MOVIMENTO";
     if (limpo === "" || limpo === "NAO TENHO") return "SEM EQUIPE";
     
     return limpo;
@@ -131,7 +131,6 @@ const AdminPanel = () => {
     setRankingCompleto(rankingFinal); 
   };
 
-  // Botão de atualizar agora chama a busca manual
   const handleRefresh = () => setRefreshKey(prev => prev + 1);
 
   const handleExportExcel = () => {
@@ -168,25 +167,19 @@ const AdminPanel = () => {
     setTimeout(() => setCopiado(false), 2000);
   };
 
-  // === DELETE ECONÔMICO (NÃO RELÊ TUDO) ===
   const handleDelete = async (id: string, nome: string) => {
     if (window.confirm(`⚠️ TEM CERTEZA?\n\nIsso vai excluir permanentemente a inscrição de:\n${nome}`)) {
         try { 
-            // 1. Apaga no Firebase
             await deleteDoc(doc(db, "inscrição", id)); 
-            
-            // 2. Apaga da tela MANUALMENTE (Economiza leituras)
             const novaLista = inscritos.filter(p => p.id !== id);
             setInscritos(novaLista);
             calcularRankingManipulado(novaLista); 
-            
             alert("Excluído com sucesso!"); 
         } 
         catch (error) { alert("Erro ao excluir. Tente novamente."); }
     }
   };
 
-  // === EDIÇÃO ECONÔMICA (NÃO RELÊ TUDO) ===
   const iniciarEdicao = (id: string, timeAtual: string) => { 
       setEditandoId(id); 
       setNovoTime(timeAtual); 
@@ -199,18 +192,14 @@ const AdminPanel = () => {
   
   const salvarEdicao = async (id: string) => {
     if (!novoTime.trim()) return;
-    
     try {
         const timeFormatado = novoTime.toUpperCase();
-        // 1. Atualiza no Firebase
         const docRef = doc(db, "inscrição", id);
         await updateDoc(docRef, { team: timeFormatado });
         
-        // 2. Atualiza na tela MANUALMENTE
         const novaLista = inscritos.map(p => p.id === id ? { ...p, team: timeFormatado } : p);
         setInscritos(novaLista);
         calcularRankingManipulado(novaLista);
-
         setEditandoId(null);
     } catch (error) { alert("Erro ao atualizar equipe."); }
   };
@@ -222,8 +211,38 @@ const AdminPanel = () => {
     avancado: inscritos.filter(i => i.level === 'Avançado').length
   };
 
+  // === FILTRO COM MODO DETETIVE + BARRA DE PESQUISA JUNTOS ===
   const inscritosFiltrados = inscritos.filter((item) => {
+    
+    // 1. SE O DETETIVE ESTIVER LIGADO, ESCONDE QUEM NÃO É FRAUDE
+    if (modoDetetive) {
+        const nomeAtualCompleto = (item.name || "").trim().toUpperCase();
+        const primeiroNomeAtual = nomeAtualCompleto.split(" ")[0]; 
+        const equipeAtual = padronizarNome(item.team);
+        const nivelAtual = (item.level || "").trim().toUpperCase();
+
+        const copias = inscritos.filter(i => {
+            const nomeTeste = (i.name || "").trim().toUpperCase();
+            const primeiroNomeTeste = nomeTeste.split(" ")[0];
+            const equipeTeste = padronizarNome(i.team);
+            const nivelTeste = (i.level || "").trim().toUpperCase();
+
+            return (
+                primeiroNomeTeste === primeiroNomeAtual && 
+                equipeTeste === equipeAtual && 
+                nivelTeste === nivelAtual
+            );
+        });
+        
+        // Se a pessoa NÃO tiver cópia, a gente já esconde ela da tela
+        if (copias.length <= 1) {
+            return false; 
+        }
+    }
+
+    // 2. APLICA A BARRA DE PESQUISA (Para você filtrar uma equipe por vez)
     if (!busca) return true;
+    
     const termo = padronizarNome(busca); 
     const equipe = padronizarNome(item.team);
     const nome = (item.name || "").toUpperCase();
@@ -309,6 +328,12 @@ const AdminPanel = () => {
                 <div className="flex flex-wrap gap-2 w-full md:w-auto justify-start">
                     <button onClick={handleExportExcel} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-xl font-bold uppercase text-xs flex items-center gap-2 shadow-lg shadow-green-600/20 active:scale-95 transition-all"><Download size={16} /> Planilha</button>
                     <button onClick={handleCopyEmails} className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl font-bold uppercase text-xs flex items-center gap-2 shadow-lg shadow-purple-600/20 active:scale-95 transition-all">{copiado ? <Check size={16} /> : <Copy size={16} />} {copiado ? "Copiado!" : "E-mails"}</button>
+                    
+                    {/* BOTÃO DETETIVE */}
+                    <button onClick={() => setModoDetetive(!modoDetetive)} className={`px-4 py-2 rounded-xl font-bold uppercase text-xs flex items-center gap-2 shadow-lg active:scale-95 transition-all ${modoDetetive ? 'bg-red-600 text-white shadow-red-600/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}>
+                        🕵️ {modoDetetive ? "Sair do Detetive" : "Achar Fraudes"}
+                    </button>
+
                     <button onClick={handleRefresh} title="Atualizar Agora" className="bg-blue-900 p-2 rounded-xl active:scale-95 group"><RotateCcw size={20} className="group-hover:rotate-180 transition-transform text-blue-200" /></button>
                     <button onClick={() => setModoTV(true)} className="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-4 py-2 rounded-xl font-bold uppercase text-xs flex items-center gap-2 shadow-lg shadow-yellow-400/20 active:scale-95 transition-all"><MonitorPlay size={16} /> <span className="hidden sm:inline">Ver</span> Ranking</button>
                     <button onClick={() => window.open('/ranking', '_blank')} className="bg-blue-800 hover:bg-blue-700 text-blue-200 px-3 py-2 rounded-xl active:scale-95 transition-all"><ExternalLink size={16} /></button>
@@ -372,7 +397,7 @@ const AdminPanel = () => {
                         </div>
                     </div>
                 ))
-            ) : (<div className="text-center py-12 opacity-50 border-2 border-dashed border-blue-800 rounded-3xl"><p className="text-blue-300 font-bold">Ninguém encontrado.</p></div>)}
+            ) : (<div className="text-center py-12 opacity-50 border-2 border-dashed border-blue-800 rounded-3xl"><p className="text-blue-300 font-bold">Nenhum inscrito ou fraude encontrada.</p></div>)}
         </div>
         <button onClick={() => window.location.href = '/'} className="flex items-center gap-2 text-blue-400 text-[10px] font-bold uppercase tracking-widest hover:text-white mx-auto active:scale-95"><ArrowLeft size={14} /> Voltar para o Site</button>
       </div>
