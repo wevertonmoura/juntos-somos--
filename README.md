@@ -32,7 +32,7 @@ O sistema vai além de uma simples landing page. Ele conta com uma mecânica de 
 
 Ao contrário de projetos de estudo comuns, este sistema foi testado e validado no mundo real:
 - Suportou acessos simultâneos de diversas equipes da região.
-- Processou e organizou os dados de mais de **200 corredores**.
+- Processou e organizou os dados de mais de **1000 corredores**.
 - Facilitou a comunicação direta entre a organização e os atletas, reduzindo o trabalho manual a zero.
 
 ## 📸 Screenshots
