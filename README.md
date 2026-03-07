@@ -45,7 +45,7 @@ Ao contrário de projetos de estudo comuns, este sistema foi testado e validado 
 
 ## 🌐 Link do Projeto
 
-🔗 **[Acesse o sistema online aqui](link-do-seu-site-na-vercel.app)**
+🔗 **[Acesse o sistema online aqui](juntos-somos.vercel.app)**
 
 ---
-Desenvolvido com dedicação por **[Weverton Moura](seu-link-do-linkedin)**.
+Desenvolvido com dedicação por **[Weverton Moura](https://www.linkedin.com/in/weverton-moura-6922782bb/)**.
