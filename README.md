@@ -1,73 +1,51 @@
-# React + TypeScript + Vite
+# 🏃‍♂️ Sistema de Gestão e Ranking de Eventos Esportivos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Status do Projeto](https://img.shields.io/badge/Status-Concluído-success)](#)
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel-black)](#)
 
-Currently, two official plugins are available:
+Uma plataforma web completa desenvolvida para gerenciar inscrições, engajar participantes e automatizar a comunicação do evento de corrida **"Juntos Somos Mais - União Entre Equipes"**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 💻 Sobre o Projeto
 
-## React Compiler
+Este projeto nasceu de uma necessidade real: organizar um evento esportivo para múltiplas equipes de corrida em Camaragibe/PE, garantindo uma experiência fluida desde a inscrição até o pós-evento. 
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+O sistema vai além de uma simples landing page. Ele conta com uma mecânica de **gamificação (Ranking de Equipes)** para incentivar a competição saudável e um **Painel Administrativo** para o organizador ter controle total sobre os dados dos participantes e realizar disparos de e-mail em massa. O evento foi um sucesso absoluto, processando centenas de inscrições reais.
 
-## Expanding the ESLint configuration
+## ✨ Funcionalidades Principais
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **📝 Sistema de Inscrição Inteligente:** Formulário rápido e intuitivo para os corredores garantirem suas vagas e selecionarem suas equipes.
+* **🏆 Ranking em Tempo Real:** Um placar dinâmico ("Modo Detetive") que mostra a quantidade de inscritos por equipe, gerando engajamento e competitividade antes do evento.
+* **⚙️ Painel Administrativo (Dashboard):** Área restrita para visualização de métricas e controle de inscritos.
+* **📧 Gestão de E-mails e Leads:** Funcionalidade de extração rápida de e-mails no painel ADM, permitindo o disparo de comunicações (lembretes, avisos e agradecimentos) em massa (CCO) sem travar o servidor.
+* **📱 100% Responsivo:** Interface otimizada para funcionar perfeitamente em smartphones, facilitando a inscrição na palma da mão.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠️ Tecnologias Utilizadas
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+*(Weverton, ajuste esta lista de acordo com as linguagens exatas que você usou no código)*
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+* **Front-end:** HTML5, CSS3, JavaScript / [Framework se houver, ex: React.js, Next.js, Flutter Web]
+* **Back-end/Banco de Dados:** [Coloque o banco que você usou, ex: Firebase, Supabase, Node.js]
+* **Deploy e Hospedagem:** Vercel / Netlify
+* **Controle de Versão:** Git e GitHub
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📈 O Impacto (Resultados Reais)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Ao contrário de projetos de estudo comuns, este sistema foi testado e validado no mundo real:
+- Suportou acessos simultâneos de diversas equipes da região.
+- Processou e organizou os dados de mais de **200 corredores**.
+- Facilitou a comunicação direta entre a organização e os atletas, reduzindo o trabalho manual a zero.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📸 Screenshots
+
+*(Adicione imagens ou GIFs do seu projeto aqui para o recrutador ver a interface antes de clicar no link)*
+
+![Página Inicial](link-da-imagem-aqui)
+![Tela de Ranking](link-da-imagem-aqui)
+![Painel ADM](link-da-imagem-aqui)
+
+## 🌐 Link do Projeto
+
+🔗 **[Acesse o sistema online aqui](link-do-seu-site-na-vercel.app)**
+
+---
+Desenvolvido com dedicação por **[Weverton Moura](seu-link-do-linkedin)**.
