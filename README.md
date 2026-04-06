@@ -23,8 +23,8 @@ O sistema vai além de uma simples landing page. Ele conta com uma mecânica de 
 
 *(Weverton, ajuste esta lista de acordo com as linguagens exatas que você usou no código)*
 
-* **Front-end:** HTML5, CSS3, JavaScript / [Framework se houver, ex: React.js, Next.js, Flutter Web]
-* **Back-end/Banco de Dados:** [Coloque o banco que você usou, ex: Firebase, Supabase, Node.js]
+* **Front-end:** HTML5, CSS3, JavaScript  ]
+* **Back-end/Banco de Dados:*super base
 * **Deploy e Hospedagem:** Vercel / Netlify
 * **Controle de Versão:** Git e GitHub
 
